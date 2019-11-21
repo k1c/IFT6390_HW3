@@ -297,9 +297,9 @@ if __name__ == '__main__':
         trainset, validset, testset = None, None, None
 
     #tuples: features = trainset[0], targets = trainset[1]
-    trainset = (trainset[0][:10], trainset[1][:10])
-    validset = trainset
-    testset = trainset
+    # trainset = (trainset[0][:10], trainset[1][:10])
+    # validset = trainset
+    # testset = trainset
 
     #trainset, validset, testset = MNIST_Loader.load_dataset(args.batch_size)
 
