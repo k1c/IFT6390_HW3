@@ -297,6 +297,9 @@ if __name__ == '__main__':
         trainset, validset, testset = None, None, None
 
     #tuples: features = trainset[0], targets = trainset[1]
+    trainset = (trainset[0][:10], trainset[1][:10])
+    validset = trainset
+    testset = trainset
 
     #trainset, validset, testset = MNIST_Loader.load_dataset(args.batch_size)
 
@@ -312,7 +315,7 @@ if __name__ == '__main__':
                         testset=testset,
                         epochs=args.epochs)
         loss_vector, valid_accuracy, test_accuracy = results
-        with open('/project/hp_results.txt', 'a') as text_file:
+        with open('hp_results.txt', 'a') as text_file:
             text_file.write(f'{args.epochs} {args.batch_size} {args.lr} {args.activation} {args.init} {args.h1} {args.h2} {valid_accuracy} {test_accuracy}\n')
 
     if args.init == 'all':
