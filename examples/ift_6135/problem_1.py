@@ -298,8 +298,8 @@ if __name__ == '__main__':
 
     #tuples: features = trainset[0], targets = trainset[1]
     # trainset = (trainset[0][:10], trainset[1][:10])
-    # validset = trainset
-    # testset = trainset
+    # validset = (validset[0][:10], validset[1][:10])
+    # testset = (testset[0][:10], testset[1][:10])
 
     #trainset, validset, testset = MNIST_Loader.load_dataset(args.batch_size)
 
