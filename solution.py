@@ -53,10 +53,24 @@ class NN(object):
             (self.relu(self, x, grad) > 0).astype(int) # 1.0 * (self.relu(self, x, grad) > 0) #TODO check this
         return np.maximum(0, x)
 
+    # def sigmoid(self, x, grad=False):
+    #     if grad:
+    #         self.sigmoid(x) * (1 - self.sigmoid(x))
+    #     return 1.0 / (1.0 + np.exp(-x)) #might have to implement numerically stable sigmoid
+
+# source for numerically stable sigmoid: https://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/
     def sigmoid(self, x, grad=False):
         if grad:
             self.sigmoid(x) * (1 - self.sigmoid(x))
-        return 1.0 / (1.0 + np.exp(-x)) #might have to implement numerically stable sigmoid
+        else:
+            "Numerically stable sigmoid function."
+            if x >= 0:
+                z = np.exp(-x)
+                return 1 / (1 + z)
+            else:
+                # if x is less than zero then z will be small, denom can't be zero because it's 1+z.
+                z = np.exp(x)
+                return z / (1 + z)
 
     def tanh(self, x, grad=False):
         if grad:
@@ -80,6 +94,11 @@ class NN(object):
         x_exp = np.exp(x_shift)
         sum_exp = np.sum(x_exp)
         return x_exp/sum_exp
+
+    # def _softmax(self, X):
+    #     """ Softmax activation function """
+    #     e_x = np.exp(X - np.max(X))
+    #     return e_x / e_x.sum(axis=0)
 
     def forward(self, x):
         cache = {"Z0": x}
@@ -154,3 +173,8 @@ class NN(object):
         # WRITE CODE HERE
         pass
         return 0
+
+
+if __name__ == '__main__':
+    model = NN(seed=42)
+
