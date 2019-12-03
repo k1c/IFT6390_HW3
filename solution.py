@@ -43,8 +43,10 @@ class NN(object):
         # self.weights is a dictionary with keys W1, b1, W2, b2, ..., Wm, Bm where m - 1 is the number of hidden layers
         all_dims = [dims[0]] + list(self.hidden_dims) + [dims[1]]
         for layer_n in range(1, self.n_hidden + 2):
-            # WRITE CODE HERE
-            self.weights[f"b{layer_n}"] = np.zeros((1, all_dims[layer_n]))
+            low = -1.0/np.sqrt(all_dims[layer_n - 1])
+            high = 1.0/np.sqrt(all_dims[layer_n - 1])
+            self.weights[f"W{layer_n}"] = np.random.uniform(low, high, (all_dims[layer_n - 1], all_dims[layer_n]))
+            self.weights[f"b{layer_n}"] = np.zeros((1, all_dims[layer_n])) # no biases on input dimension
 
     def relu(self, x, grad=False):
         if grad:
@@ -54,7 +56,7 @@ class NN(object):
     def sigmoid(self, x, grad=False):
         if grad:
             self.sigmoid(x) * (1 - self.sigmoid(x))
-        return 1.0 / (1.0 + np.exp(-x))
+        return 1.0 / (1.0 + np.exp(-x)) #might have to implement numerically stable sigmoid
 
     def tanh(self, x, grad=False):
         if grad:
