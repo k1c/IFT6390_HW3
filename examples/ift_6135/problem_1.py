@@ -4,7 +4,7 @@ import pickle
 
 import matplotlib.pyplot as plt
 
-import MNIST_Loader
+#import MNIST_Loader
 
 
 class NN(object):

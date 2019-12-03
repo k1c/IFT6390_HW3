@@ -35,7 +35,7 @@ class NN(object):
         else:
             self.train, self.valid, self.test = None, None, None
 
-    def initialize_weights(self, dims):
+    def initialize_weights(self, dims): # dims is of size 2 containing the input dimension and the number of classes
         if self.seed is not None:
             np.random.seed(self.seed)
 
@@ -48,47 +48,36 @@ class NN(object):
 
     def relu(self, x, grad=False):
         if grad:
-            # WRITE CODE HERE
-            pass
-        # WRITE CODE HERE
-        pass
-        return 0
+            (self.relu(self, x, grad) > 0).astype(int) # 1.0 * (self.relu(self, x, grad) > 0) #TODO check this
+        return np.maximum(0, x)
 
     def sigmoid(self, x, grad=False):
         if grad:
-            # WRITE CODE HERE
-            pass
-        # WRITE CODE HERE
-        pass
-        return 0
+            self.sigmoid(x) * (1 - self.sigmoid(x))
+        return 1.0 / (1.0 + np.exp(-x))
 
     def tanh(self, x, grad=False):
         if grad:
-            # WRITE CODE HERE
-            pass
-        # WRITE CODE HERE
-        pass
-        return 0
+            1 - self.tanh(x) ** 2
+        return (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x)) #other option: np.tanh(x)
 
     def activation(self, x, grad=False):
         if self.activation_str == "relu":
-            # WRITE CODE HERE
-            pass
+            return self.relu(self, x, grad)
         elif self.activation_str == "sigmoid":
-            # WRITE CODE HERE
-            pass
+            return self.sigmoid(self, x, grad)
         elif self.activation_str == "tanh":
-            # WRITE CODE HERE
-            pass
+            return self.tanh(self, x, grad)
         else:
             raise Exception("invalid")
         return 0
 
     def softmax(self, x):
         # Remember that softmax(x-C) = softmax(x) when C is a constant.
-        # WRITE CODE HERE
-        pass
-        return 0
+        x_shift = x - np.max(x)
+        x_exp = np.exp(x_shift)
+        sum_exp = np.sum(x_exp)
+        return x_exp/sum_exp
 
     def forward(self, x):
         cache = {"Z0": x}
