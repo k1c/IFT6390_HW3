@@ -220,7 +220,7 @@ def plot_curves(train, valid, epochs, metric_name, model_kwargs):
     plt.title(f"Train and Valid {metric_name} on {epochs} epochs\n with {model_kwargs}")
     plt.legend(["train", "valid"], loc='upper right')
     plt.savefig(f"{metric_name}-{epochs}-{model_kwargs}.png", bbox_inches='tight')
-
+    plt.clf()
 
 def main(seed, hidden_dims):
     n_epochs = 50
