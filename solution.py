@@ -69,15 +69,15 @@ class NN(object):
     def tanh(self, x, grad=False):
         if grad:
             return 1 - self.tanh(x) ** 2
-        return (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x)) #other option: np.tanh(x)
+        return (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x))
 
     def activation(self, x, grad=False):
         if self.activation_str == "relu":
-            return self.relu(self, x, grad)
+            return self.relu(x, grad)
         elif self.activation_str == "sigmoid":
-            return self.sigmoid(self, x, grad)
+            return self.sigmoid(x, grad)
         elif self.activation_str == "tanh":
-            return self.tanh(self, x, grad)
+            return self.tanh(x, grad)
         else:
             raise Exception("invalid")
         return 0
@@ -91,55 +91,59 @@ class NN(object):
             return e_x / np.sum(e_x, axis=0)
 
 
-    def add_bias(self, h, W, b):
-        h = np.concatenate([h, np.ones((1, h.shape[1]))], axis=0)
-        W = np.concatenate([W, b])
-        return h, W
-
     def forward(self, x):
         cache = {"Z0": x}
         # cache is a dictionary with keys Z0, A0, ..., Zm, Am where m - 1 is the number of hidden layers
         # Ai corresponds to the preactivation at layer i, Zi corresponds to the activation at layer i
         num_layers = self.n_hidden + 2
-        z = x
-        for layer_n in range(1, num_layers):  #iterating through number of layers
+        Z = x
+        for layer_n in range(1, num_layers):  # iterating through number of layers
             weights = self.weights[f"W{layer_n}"]
             biases = self.weights[f"b{layer_n}"]
-            zb, Wb = self.add_bias(z,weights,biases)
-            A = np.dot(Wb.T, zb)
+            A = np.dot(Z, weights) + biases
             cache[f"A{layer_n}"] = A
             if layer_n == num_layers - 1:
                 Z = self.softmax(A)
-                cache[f"ZL"] = Z
+                cache[f"Z{layer_n}"] = Z
             else:
                 Z = self.activation(A)
                 cache[f"Z{layer_n}"] = Z
         return cache
 
-    def backward(self, cache, labels):
+
+    def backward(self, cache, labels): #cache is from the forward function on a mini-batch
         output = cache[f"Z{self.n_hidden + 1}"]
+        grad_a = - (labels - output)
         grads = {}
-        # grads is a dictionary with keys dAm, dWm, dbm, dZ(m-1), dA(m-1), ..., dW1, db1
-        # WRITE CODE HERE
-        pass
+        for i in range(len(cache) - 5):
+            index = len(cache) - i - 3
+            grad_W = np.dot(grad_a.T, cache[f"Z{index - 3}"]).T
+            grad_b = np.sum(grad_a, axis=0)[None, :]
+            grads[f"dA{index-2}"] = grad_a
+            grads[f"dW{index-2}"] = grad_W / float(labels.shape[0])
+            grads[f"db{index-2}"] = grad_b / float(labels.shape[0])
+            if index>3:
+                grad_h = np.dot(grad_a, self.weights[f"W{index-2}"].T)
+                grads[f"dZ{index-3}"] = grad_h
+                grad_a = np.multiply(grad_h, self.activation(cache[f"A{index - 3}"], grad=True))
         return grads
 
     def update(self, grads):
         for layer in range(1, self.n_hidden + 2):
-            # WRITE CODE HERE
-            pass
+            self.weights[f"W{layer}"] = self.weights[f"W{layer}"] - (self.lr *  grads[f"dW{layer}"])
+            self.weights[f"b{layer}"] = self.weights[f"b{layer}"] - (self.lr * grads[f"db{layer}"])
 
     def one_hot(self, y):
-        # WRITE CODE HERE
-        pass
-        return 0
+        b = np.zeros((y.size, self.n_classes))
+        b[np.arange(y.size), y] = 1
+        return b
 
     def loss(self, prediction, labels):
         prediction[np.where(prediction < self.epsilon)] = self.epsilon
         prediction[np.where(prediction > 1 - self.epsilon)] = 1 - self.epsilon
-        # WRITE CODE HERE
-        pass
-        return 0
+        N = prediction.shape[0]
+        ce = -np.sum(labels * np.log(prediction + 1e-9)) / N
+        return ce
 
     def compute_loss_and_accuracy(self, X, y):
         one_y = self.one_hot(y)
@@ -161,12 +165,14 @@ class NN(object):
             for batch in range(n_batches):
                 minibatchX = X_train[self.batch_size * batch:self.batch_size * (batch + 1), :]
                 minibatchY = y_onehot[self.batch_size * batch:self.batch_size * (batch + 1), :]
-                # WRITE CODE HERE
-                pass
+                cache = self.forward(minibatchX)
+                grads = self.backward(cache, minibatchY)
+                self.update(grads)
 
             X_train, y_train = self.train
             train_loss, train_accuracy, _ = self.compute_loss_and_accuracy(X_train, y_train)
             X_valid, y_valid = self.valid
+
             valid_loss, valid_accuracy, _ = self.compute_loss_and_accuracy(X_valid, y_valid)
 
             self.train_logs['train_accuracy'].append(train_accuracy)
@@ -178,11 +184,12 @@ class NN(object):
 
     def evaluate(self):
         X_test, y_test = self.test
-        # WRITE CODE HERE
-        pass
-        return 0
+        test_loss, test_accuracy, _ = self.compute_loss_and_accuracy(X_test, y_test)
+        return test_loss, test_accuracy
 
 
+#
 # if __name__ == '__main__':
 #     model = NN(seed=99)
+#     model.initialize_weights()
 
