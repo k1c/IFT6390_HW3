@@ -12,7 +12,6 @@ class NN(object):
                  batch_size=1000,
                  seed=None,
                  activation="relu",
-                 init_method="glorot"
                  ):
 
         self.hidden_dims = hidden_dims
@@ -21,7 +20,6 @@ class NN(object):
         self.n_classes = n_classes
         self.lr = lr
         self.batch_size = batch_size
-        self.init_method = init_method
         self.seed = seed
         self.activation_str = activation
         self.epsilon = epsilon
@@ -188,8 +186,15 @@ class NN(object):
         return test_loss, test_accuracy
 
 
-#
-# if __name__ == '__main__':
-#     model = NN(seed=99)
-#     model.initialize_weights()
 
+if __name__ == '__main__':
+    n_epochs = 50
+    kwargs = {
+        "hidden_dims": (512, 256),
+        "lr": 0.003,
+        "batch_size": 100
+    }
+
+    model = NN(seed=0, **kwargs)
+    train_logs = model.train_loop(n_epochs=n_epochs)
+    model.evaluate()
