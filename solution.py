@@ -109,29 +109,6 @@ class NN(object):
                 cache[f"Z{layer_n}"] = Z
         return cache
 
-
-    # def backward(self, cache, labels): #cache is from the forward function on a mini-batch
-    #     output = cache[f"Z{self.n_hidden + 1}"]
-    #     grad_a = - (labels - output)
-    #     grads = {}
-    #     print("range max",len(cache) - 5 )
-    #     print("CACHE", cache.keys())
-    #     for i in range(len(cache) - 5):
-    #         index = len(cache) - i - 3
-    #         print("index from back", index)
-    #         grad_W = np.dot(grad_a.T, cache[f"Z{index - 3}"]).T
-    #         grad_b = np.sum(grad_a, axis=0)[None, :]
-    #         grads[f"dA{index-2}"] = grad_a
-    #         grads[f"dW{index-2}"] = grad_W / float(labels.shape[0])
-    #         grads[f"db{index-2}"] = grad_b / float(labels.shape[0])
-    #         if index > 3:
-    #             print(self.weights.keys())
-    #             print("Weight",f"W{index-2}")
-    #             grad_h = np.dot(grad_a, self.weights[f"W{index-2}"].T)
-    #             grads[f"dZ{index-3}"] = grad_h
-    #             grad_a = np.multiply(grad_h, self.activation(cache[f"A{index - 3}"], grad=True))
-    #     return grads
-
     def backward(self, cache, labels):  # cache is from the forward function on a mini-batch
         output = cache[f"Z{self.n_hidden + 1}"]
         grad_a = - (labels - output)
@@ -141,8 +118,8 @@ class NN(object):
             grad_W = np.dot(grad_a.T, cache[f"Z{i - 1}"]).T
             grad_b = np.sum(grad_a, axis=0)[None, :]
             grads[f"dA{i}"] = grad_a
-            grads[f"dW{i}"] = grad_W / float(labels.shape[0])
-            grads[f"db{i}"] = grad_b / float(labels.shape[0])
+            grads[f"dW{i}"] = grad_W / float(self.batch_size)
+            grads[f"db{i}"] = grad_b / float(self.batch_size)
             if i > 1:
                 grad_h = np.dot(grad_a, self.weights[f"W{i}"].T)
                 grads[f"dZ{i}"] = grad_h
