@@ -53,6 +53,12 @@ class NN(object):
             (self.relu(self, x, grad) > 0).astype(int) # 1.0 * (self.relu(self, x, grad) > 0) #TODO check this
         return np.maximum(0, x)
 
+#https://towardsdatascience.com/lets-code-a-neural-network-in-plain-numpy-ae7e74410795
+    # def relu_backward(dA, Z):
+    #     dZ = np.array(dA, copy=True)
+    #     dZ[Z <= 0] = 0;
+    #     return dZ;
+
     # def sigmoid(self, x, grad=False):
     #     if grad:
     #         self.sigmoid(x) * (1 - self.sigmoid(x))
@@ -88,24 +94,41 @@ class NN(object):
             raise Exception("invalid")
         return 0
 
-    def softmax(self, x):
-        # Remember that softmax(x-C) = softmax(x) when C is a constant.
-        x_shift = x - np.max(x)
-        x_exp = np.exp(x_shift)
-        sum_exp = np.sum(x_exp)
-        return x_exp/sum_exp
+    # def softmax(self, x):
+    #     # Remember that softmax(x-C) = softmax(x) when C is a constant.
+    #     x_shift = x - np.max(x)
+    #     x_exp = np.exp(x_shift)
+    #     sum_exp = np.sum(x_exp)
+    #     return x_exp/sum_exp
 
-    # def _softmax(self, X):
-    #     """ Softmax activation function """
-    #     e_x = np.exp(X - np.max(X))
-    #     return e_x / e_x.sum(axis=0)
+    def softmax(self, x):
+        """ Softmax activation function """
+        e_x = np.exp(x - np.max(x))
+        return e_x / e_x.sum(axis=0)
+
+    def add_bias(self, h, W, b):
+        h = np.concatenate([h, np.ones((1, h.shape[1]))], axis=0)
+        W = np.concatenate([W, b])
+        return h, W
 
     def forward(self, x):
         cache = {"Z0": x}
         # cache is a dictionary with keys Z0, A0, ..., Zm, Am where m - 1 is the number of hidden layers
         # Ai corresponds to the preactivation at layer i, Zi corresponds to the activation at layer i
-        # WRITE CODE HERE
-        pass
+        num_layers = self.n_hidden + 2
+        z = x
+        for layer_n in range(1, num_layers):  #iterating through number of layers
+            weights = self.weights[f"W{layer_n}"]
+            biases = self.weights[f"b{layer_n}"]
+            zb, Wb = self.add_bias(z,weights,biases)
+            A = np.dot(Wb.T, zb)
+            cache[f"A{layer_n}"] = A
+            if layer_n == num_layers - 1:
+                Z = self.softmax(A)
+                cache[f"ZL"] = Z
+            else:
+                Z = self.activation(A)
+                cache[f"Z{layer_n}"] = Z
         return cache
 
     def backward(self, cache, labels):
@@ -176,5 +199,5 @@ class NN(object):
 
 
 if __name__ == '__main__':
-    model = NN(seed=42)
+    model = NN(seed=99)
 
