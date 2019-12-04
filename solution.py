@@ -1,6 +1,7 @@
 import pickle
 import numpy as np
 
+import matplotlib.pyplot as plt
 
 class NN(object):
     def __init__(self,
@@ -208,16 +209,42 @@ class NN(object):
         return test_loss, test_accuracy
 
 
+def plot_curves(train, valid, epochs, metric_name, model_kwargs):
+    t = np.arange(len(train))
+    plt.ylabel(f'Average {metric_name}')
+    plt.xlabel('Epoch')
+    plt.grid(True)
+    plt.xlim(0, epochs)
+    plt.plot(t, train)
+    plt.plot(t, valid)
+    plt.title(f"Train and Valid {metric_name} on {epochs} epochs\n with {model_kwargs}")
+    plt.legend(["train", "valid"], loc='upper right')
+    plt.savefig(f"{metric_name}-{epochs}-{model_kwargs}.png", bbox_inches='tight')
 
-if __name__ == '__main__':
+
+def main(seed, hidden_dims):
     n_epochs = 50
     kwargs = {
-        "hidden_dims": (512, 256),
+        "seed": seed,
+        "hidden_dims": hidden_dims,
         "lr": 0.003,
         "batch_size": 100,
-        "datapath": './examples/ift_6135/cifar10.pkl'
     }
-
-    model = NN(seed=0, **kwargs)
+    model = NN(**kwargs)
     train_logs = model.train_loop(n_epochs=n_epochs)
-    model.evaluate()
+    test_loss, test_accuracy = model.evaluate()
+
+    print(kwargs)
+    print(test_loss, test_accuracy)
+    for metric_name in ["loss", "accuracy"]:
+        plot_curves(train_logs[f'train_{metric_name}'],
+                    train_logs[f'validation_{metric_name}'],
+                    n_epochs,
+                    metric_name,
+                    kwargs)
+
+
+if __name__ == '__main__':
+    for seed in [0, 1, 2]:
+        for hidden_dims in [(512, 256), (512, 120, 120, 120, 120, 120, 120, 120)]:
+            main(hidden_dims=hidden_dims, seed=seed)
