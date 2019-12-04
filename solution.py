@@ -50,37 +50,25 @@ class NN(object):
 
     def relu(self, x, grad=False):
         if grad:
-            (self.relu(self, x, grad) > 0).astype(int) # 1.0 * (self.relu(self, x, grad) > 0) #TODO check this
+            return (self.relu(x) > 0).astype(int)
         return np.maximum(0, x)
-
-#https://towardsdatascience.com/lets-code-a-neural-network-in-plain-numpy-ae7e74410795
-    # def relu_backward(dA, Z):
-    #     dZ = np.array(dA, copy=True)
-    #     dZ[Z <= 0] = 0;
-    #     return dZ;
-
-    # def sigmoid(self, x, grad=False):
-    #     if grad:
-    #         self.sigmoid(x) * (1 - self.sigmoid(x))
-    #     return 1.0 / (1.0 + np.exp(-x)) #might have to implement numerically stable sigmoid
 
 # source for numerically stable sigmoid: https://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/
     def sigmoid(self, x, grad=False):
         if grad:
-            self.sigmoid(x) * (1 - self.sigmoid(x))
+            return self.sigmoid(x) * (1 - self.sigmoid(x))
+        "Numerically stable sigmoid function."
+        if x.all() >= 0:
+            z = np.exp(-x)
+            return 1 / (1 + z)
         else:
-            "Numerically stable sigmoid function."
-            if x >= 0:
-                z = np.exp(-x)
-                return 1 / (1 + z)
-            else:
-                # if x is less than zero then z will be small, denom can't be zero because it's 1+z.
-                z = np.exp(x)
-                return z / (1 + z)
+            # if x is less than zero then z will be small, denom can't be zero because it's 1+z.
+            z = np.exp(x)
+            return z / (1 + z)
 
     def tanh(self, x, grad=False):
         if grad:
-            1 - self.tanh(x) ** 2
+            return 1 - self.tanh(x) ** 2
         return (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x)) #other option: np.tanh(x)
 
     def activation(self, x, grad=False):
@@ -94,17 +82,14 @@ class NN(object):
             raise Exception("invalid")
         return 0
 
-    # def softmax(self, x):
-    #     # Remember that softmax(x-C) = softmax(x) when C is a constant.
-    #     x_shift = x - np.max(x)
-    #     x_exp = np.exp(x_shift)
-    #     sum_exp = np.sum(x_exp)
-    #     return x_exp/sum_exp
-
     def softmax(self, x):
-        """ Softmax activation function """
-        e_x = np.exp(x - np.max(x))
-        return e_x / e_x.sum(axis=0)
+        if x.ndim > 1:
+            e_x = np.exp(x - np.max(x, keepdims=True))
+            return e_x / np.sum(e_x, axis=1, keepdims=True)
+        else:
+            e_x = np.exp(x - np.max(x))
+            return e_x / np.sum(e_x, axis=0)
+
 
     def add_bias(self, h, W, b):
         h = np.concatenate([h, np.ones((1, h.shape[1]))], axis=0)
@@ -198,6 +183,6 @@ class NN(object):
         return 0
 
 
-if __name__ == '__main__':
-    model = NN(seed=99)
+# if __name__ == '__main__':
+#     model = NN(seed=99)
 
